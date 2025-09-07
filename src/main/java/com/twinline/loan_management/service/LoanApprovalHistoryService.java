@@ -3,11 +3,13 @@ package com.twinline.loan_management.service;
 import com.twinline.loan_management.entities.LoanApprovalHistory;
 import com.twinline.loan_management.exceptions.ResourceNotFoundException;
 import com.twinline.loan_management.repository.LoanApprovalHistoryRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class LoanApprovalHistoryService {
 
@@ -19,9 +21,7 @@ public class LoanApprovalHistoryService {
             throw new ResourceNotFoundException("Loan ID cannot be null");
         }
         List<LoanApprovalHistory> history = historyRepository.findByLoanApplicationIdOrderByUpdatedAtDesc(loanId);
-        if (history.isEmpty()) {
-            throw new ResourceNotFoundException("No history found for loan with id: " + loanId);
-        }
+
         return history;
     }
 

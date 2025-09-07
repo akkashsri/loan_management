@@ -34,7 +34,6 @@ public class LoanApplicationController {
             return ResponseEntity.badRequest().body("All fields are required");
         }
 
-        loan.setStatus("Pending");
         LoanApplication savedLoan = loanApplicationService.createLoan(loan);
         return ResponseEntity.ok(savedLoan);
     }

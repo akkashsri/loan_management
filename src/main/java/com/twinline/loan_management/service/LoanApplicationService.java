@@ -32,7 +32,7 @@ public class LoanApplicationService {
         if (loanApplication == null) {
             throw new ResourceNotFoundException("Loan application cannot be null");
         }
-        loanApplication.setStatus("Initial Review");
+        loanApplication.setStatus("Pending");
         loanApplication.setCreatedAt(LocalDateTime.now());
         return loanApplicationRepository.save(loanApplication);
     }
