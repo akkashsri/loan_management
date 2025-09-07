@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+</head>
+<body>
+<h2>Register</h2>
+<form id="registerForm">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required><br><br>
+
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required><br><br>
+
+    <button type="submit">Register</button>
+</form>
+
+<p>Already have an account? <a href="login.html">Login here</a></p>
+
+<script>
+    document.getElementById("registerForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const user = {
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value
+        };
+
+        const response = await fetch("/loanmanagement/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(user)
+        });
+
+        if (response.ok) {
+            alert("Registration successful! Please login.");
+            window.location.href = "login.html";
+        } else {
+            alert("Registration failed, username may be taken.");
+        }
+    });
+</script>
+</body>
+</html>

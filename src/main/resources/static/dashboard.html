@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <style>
+        table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }
+    </style>
+</head>
+<body>
+<div style="display:flex; justify-content: space-between; align-items: center;">
+    <h1>Loan Dashboard</h1>
+    <button id="logoutBtn" style="padding: 5px 10px; cursor: pointer;">Logout</button>
+</div>
+
+<table id="loanTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Applicant</th>
+        <th>Amount</th>
+        <th>Tenure</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<h2>Apply for a Loan</h2>
+<form id="loanForm">
+    <input type="text" id="applicantName" placeholder="Applicant Name" required><br><br>
+    <input type="number" id="loanAmount" placeholder="Loan Amount" required><br><br>
+    <input type="number" id="tenure" placeholder="Tenure(In Years)" required><br><br>
+    <input type="number" id="income" placeholder="Income" required><br><br>
+    <input type="text" id="contactDetails" placeholder="Contact Details" required><br><br><br>
+    <button type="submit">Submit</button>
+</form>
+
+<script>
+    async function fetchLoans() {
+        const response = await fetch("http://localhost:8087/loanmanagement/dashboard", {
+            method: "GET",
+            credentials: "include"
+        });
+        console.log(response.status+" "+response.statusText);
+
+        if (response.ok) {
+            const loans = await response.json();
+            const tbody = document.querySelector("#loanTable tbody");
+            tbody.innerHTML = "";
+            loans.forEach(loan => {
+                tbody.innerHTML += `<tr>
+                <td>${loan.id}</td>
+                <td>${loan.applicantName}</td>
+                <td>${loan.loanAmount}</td>
+                <td>${loan.tenure}</td>
+                <td>${loan.status}</td>
+                <td><a href="loan-details.html?id=${loan.id}">View</a></td>
+            </tr>`;
+            });
+        } else {
+            const errorMessage = await response.text();
+            alert("Error: " + errorMessage);
+        }
+    }
+
+    document.getElementById("loanForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const loan = {
+            applicantName: document.getElementById("applicantName").value,
+            loanAmount: document.getElementById("loanAmount").value,
+            tenure: document.getElementById("tenure").value,
+            income: document.getElementById("income").value,
+            contactDetails: document.getElementById("contactDetails").value
+        };
+
+        const response = await fetch("http://localhost:8087/loanmanagement/application/new", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(loan),
+            credentials: "include"
+        });
+
+        if (response.ok) {
+            alert("Loan submitted!");
+            fetchLoans();
+        }
+        else {
+            alert("Failed to submit loan");
+        }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+        const response = await fetch("http://localhost:8087/loanmanagement/logout", {
+            method: "POST",
+            credentials: "include"
+        });
+        if (response.ok) window.location.href = "login.html";
+        else alert("Logout failed");
+    });
+
+    // Fetch loans on page load
+    fetchLoans();
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loan Details</title>
+  <style>
+    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 8px; }
+  </style>
+</head>
+<body>
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; ">
+  <h1 style="margin: 0;">Loan Details</h1>
+  <button id="logoutBtn" style="padding: 5px 10px; cursor: pointer;">Logout</button>
+</div>
+<div id="loanInfo"></div>
+
+<h2>Approval History</h2>
+<table id="historyTable">
+  <thead>
+  <tr>
+    <th>Step</th>
+    <th>Status</th>
+    <th>Remarks</th>
+    <th>Updated At</th>
+  </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<h2>Update Loan Status</h2>
+<form id="updateForm">
+  <label>Step:
+    <select id="step">
+      <option>Initial Review</option>
+      <option>Document Verification</option>
+      <option>Final Approval</option>
+    </select>
+  </label><br><br>
+  <label>Status:
+    <select id="status">
+      <option>Pending</option>
+      <option>Approved</option>
+      <option>Rejected</option>
+    </select>
+  </label><br><br>
+  <label>Comment: <input type="text" id="comment"></label><br><br>
+  <button type="submit">Update</button>
+</form>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const loanId = urlParams.get("id");
+
+  async function fetchLoanDetails() {
+    const response = await fetch(`http://localhost:8087/loanmanagement/loan/${loanId}`, {
+      method: "GET",
+      credentials: "include"
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const loan = data.loan;
+      const history = data.history;
+
+      document.getElementById("loanInfo").innerHTML = `
+                <p><b>ID:</b> ${loan.id}</p>
+                <p><b>Applicant:</b> ${loan.applicantName}</p>
+                <p><b>Amount:</b> ${loan.loanAmount}</p>
+                <p><b>Tenure:</b> ${loan.tenure}</p>
+                <p><b>Status:</b> ${loan.status}</p>
+            `;
+
+      const tbody = document.querySelector("#historyTable tbody");
+      tbody.innerHTML = "";
+      history.forEach(h => {
+        const row = `<tr>
+                    <td>${h.step}</td>
+                    <td>${h.status}</td>
+                    <td>${h.remarks || ""}</td>
+                    <td>${h.updatedAt}</td>
+                </tr>`;
+        tbody.innerHTML += row;
+      });
+    } else {
+      alert("Failed to load loan details.");
+    }
+  }
+
+  document.getElementById("updateForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const step = document.getElementById("step").value;
+    const status = document.getElementById("status").value;
+    const comment = document.getElementById("comment").value;
+
+    const response = await fetch(`http://localhost:8087/loanmanagement/loan/${loanId}/update?step=${step}&status=${status}&comment=${comment}`, {
+      method: "POST",
+      credentials: "include"
+    });
+
+    if (response.ok) {
+      alert("Loan status updated!");
+      fetchLoanDetails();
+    } else {
+      alert("Failed to update loan status.");
+    }
+  });
+
+  fetchLoanDetails();
+
+  document.getElementById("logoutBtn").addEventListener("click", async () => {
+    try {
+      const response = await fetch("http://localhost:8087/loanmanagement/logout", {
+        method: "POST",
+        credentials: "include"
+      });
+
+      if (response.ok) {
+        alert("Logged out successfully!");
+        window.location.href = "login.html";
+      } else {
+        alert("Failed to logout. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  });
+</script>
+</body>
+</html>
